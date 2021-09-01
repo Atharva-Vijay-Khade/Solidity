@@ -22,14 +22,14 @@ contract HotelRoom {
     // booking person will send the ethers to smart contract and smart contract will
     // send the ethers to owner
     
-    enum Statuses { booked , vacant };  // enum keeps collection of options which never changes 
+    enum Statuses { booked , vacant }  // enum keeps collection of options which never changes 
     // we can reference the collection of options by Statuses currentStatuses; => currentStatuses = Statuses.vacant;
     Statuses currentStatuses;
 
     
     // payable to allow the owner to receive the currency
     // public because we can check the ownership
-    address public payable owner;  // owner of the smart contract
+    address payable public owner;  // owner of the smart contract
     
     // constructor is called when smart contract is created, deployed
     constructor() public {
@@ -38,6 +38,17 @@ contract HotelRoom {
         owner = msg.sender;
         currentStatuses = Statuses.vacant;  // set default status of room as vacant
     }
+    
+    
+    // Events 
+    // Events allow external consumer to subscribe to them and find out that something happened in smartContract
+    // ie : smart lock that actually unlocks hotel room and listens to events on blockchain we can use Events
+    
+    // we will create an event which will get emited when a person pays a value and get the check status valid
+    // and will now subscribe and get a key to the room or something like that 
+    
+    event Booked(address _occupant,uint value);
+    
     
     // this functio is payable because we are transfering the 
     // value in ether to the owner of the smart contract
@@ -51,16 +62,26 @@ contract HotelRoom {
     // only once in each function
     
     modifier onlyWhileVacant {
-        require(currentStatuses == statuses.vacant,"Currently Room is Booked");
+        require(currentStatuses == Statuses.vacant,"Currently Room is Booked");
         _;    // _ means after the above lines/conditions are met the function with this modifier will run
     }
     
     modifier cost(uint _amount){
-        require(msg.value >= amount ,"Not Enough Ether Provided");
+        require(msg.value >= _amount ,"Not Enough Ether Provided");
         _;
     }
     
-    function book() payable onlyWhileVacantAndPaid cost(2 ether) {
+    // well this book function would be required to be called for it work
+    // but we want that when this smart contract gets the ethers it should 
+    // automatically call this book function for that we have 
+    // receive() in solidity
+    // receive() creates a function that will get triggered when we pay the smart contract
+    // if you send ethers at the address of the smart contract then receive will create a 
+    // function and it will automatically run it 
+    // so REPLACING function book() ..... with receive
+    // external -> so that function can be called from outside
+    
+    receive() external payable onlyWhileVacant cost(2 ether) {
         // well here first we need to check if room was booked already or not
         // and was the amount paid equal to what was mentioned 
         // if both conditions met then only we can move ahead with the code for transfer and 
@@ -78,8 +99,9 @@ contract HotelRoom {
         // if yes then goes ahead with the code if no then displays the error message to
         // user, and reverts all the transactions to the user without any middle person
         // require(currentStatuses == statuses.vacant,"Currently Room is Booked"); 
-        currentStatuses = statuses.booked;
+        currentStatuses = Statuses.booked;
         owner.transfer(msg.value);
+        emit Booked(msg.sender,msg.value);
     }
     
     
