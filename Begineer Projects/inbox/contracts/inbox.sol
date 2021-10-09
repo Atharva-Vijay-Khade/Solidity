@@ -4,7 +4,7 @@ contract inbox {
 
     string public message;
 
-    function Inbox(string initialMessage) public {
+    function inbox(string initialMessage) public {
         message = initialMessage;
     }
 
