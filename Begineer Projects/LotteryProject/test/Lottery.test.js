@@ -96,4 +96,26 @@ describe('Lottery Contract',()=>{
         
     });
 
+    // end to end test 
+    it('Testing entire lottery',async ()=>{
+
+        await Lottery.methods.enter().send({
+            from : accounts[0],
+            value : web3.utils.toWei('2','ether') // used to give value in ethers
+        });
+
+        const initialBalance = await web3.eth.getBalance(accounts[0]);
+
+        await Lottery.methods.pickWinner().send({
+            from : accounts[0]
+        })
+
+        const finalBalance = await web3.eth.getBalance(accounts[0]);
+
+        const diff = finalBalance - initialBalance;
+
+        assert(diff > web3.utils.toWei('1.5','ether'));
+
+    });
+
 });
