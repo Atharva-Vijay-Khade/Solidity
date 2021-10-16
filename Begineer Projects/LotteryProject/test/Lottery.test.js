@@ -118,4 +118,21 @@ describe('Lottery Contract',()=>{
 
     });
 
+    it('Testing if players array gets empty',async()=>{
+
+        await Lottery.methods.enter().send({
+            from : accounts[0],
+            value : web3.utils.toWei('1','ether')
+        });
+
+        await Lottery.methods.pickWinner().send({
+            from : accounts[0],
+        });
+
+        const players = await Lottery.methods.getPlayers().call();
+
+        assert.equal(0,players.length);
+
+    });
+
 });
